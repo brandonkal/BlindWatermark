@@ -1,0 +1,8 @@
+# Ignore everything
+*
+# Allow required files
+!/pic
+!/requirements.txt
+!/setup.py
+!/bwm.py
+!/BuildWatermark/**
