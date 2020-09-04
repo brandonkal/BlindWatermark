@@ -17,8 +17,9 @@ class watermark():
         self.dwt_deep = dwt_deep
 
     def init_block_add_index(self, img_shape):
-        # 假设原图长宽均为2的整数倍,同时假设水印为64*64,则32*32*4
-        # 分块并DCT
+        # Assuming that the length and width of the original image are both integer multiples of 2,
+        # and assuming that the watermark is 64*64, then 32*32*4
+        # Block and merge DCT
         shape0_int, shape1_int = int(
             img_shape[0]/self.block_shape[0]), int(img_shape[1]/self.block_shape[1])
         if not shape0_int*shape1_int >= self.wm_shape[0]*self.wm_shape[1]:
@@ -30,11 +31,12 @@ class watermark():
         self.block_add_index0, self.block_add_index1 = self.block_add_index0.flatten(
         ), self.block_add_index1.flatten()
         self.length = self.block_add_index0.size
-        # 验证没有意义,但是我不验证不舒服斯基
+        # Verification doesn't make sense, but I don’t feel comfortable if I don’t verify
         assert self.block_add_index0.size == self.block_add_index1.size
 
     def read_ori_img(self, filename):
-        # 傻逼opencv因为数组类型不会变,输入是uint8输出也是uint8,而UV可以是负数且uint8会去掉小数部分
+        # Stupid openCV because the array type will not change, the input is uint8 and the output is also uint8,
+        # and UV can be negative and uint8 will remove the decimal part
         ori_img = cv2.imread(filename).astype(np.float32)
         self.ori_img_shape = ori_img.shape[:2]
         if self.color_mod == 'RGB':
@@ -67,7 +69,7 @@ class watermark():
             self.coeffs_V = [coeffs_V[1]]
 
         elif self.dwt_deep >= 2:
-            # 不希望使用太多级的dwt,2,3次就行了
+            # I don't want to use too many levels of dwt, just 2 or 3 times
             coeffs_Y = dwt2(self.ori_img_YUV[:, :, 0], 'haar')
             ha_Y = coeffs_Y[0]
             coeffs_U = dwt2(self.ori_img_YUV[:, :, 1], 'haar')
@@ -108,7 +110,8 @@ class watermark():
         self.wm = cv2.imread(filename)[:, :, 0]
         self.wm_shape = self.wm.shape[:2]
 
-        # 初始化块索引数组,因为需要验证块是否足够存储水印信息,所以才放在这儿
+        # Initialize the block index array, because it needs to verify whether the block is
+        # enough to store the watermark information, so it is placed here
         self.init_block_add_index(self.ha_Y.shape)
 
         self.wm_flatten = self.wm.flatten()
@@ -182,14 +185,14 @@ class watermark():
         for i in range(self.dwt_deep):
             (cH, cV, cD) = self.coeffs_Y[-1*(i+1)]
             embed_ha_Y = idwt2(
-                (embed_ha_Y.copy(), (cH, cV, cD)), "haar")  # 其idwt得到父级的ha
+                (embed_ha_Y.copy(), (cH, cV, cD)), "haar")  # Its idwt gets the parent's ha
             (cH, cV, cD) = self.coeffs_U[-1*(i+1)]
             embed_ha_U = idwt2(
-                (embed_ha_U.copy(), (cH, cV, cD)), "haar")  # 其idwt得到父级的ha
+                (embed_ha_U.copy(), (cH, cV, cD)), "haar")  # Its idwt gets the parent's ha
             (cH, cV, cD) = self.coeffs_V[-1*(i+1)]
             embed_ha_V = idwt2(
-                (embed_ha_V.copy(), (cH, cV, cD)), "haar")  # 其idwt得到父级的ha
-            # 最上级的ha就是嵌入水印的图,即for运行完的ha
+                (embed_ha_V.copy(), (cH, cV, cD)), "haar")  # Its idwt gets the parent's ha
+            # The uppermost ha is the image with the watermark embedded, that is, the ha after running for
 
         embed_img_YUV = np.zeros(self.ori_img_YUV.shape, dtype=np.float32)
         embed_img_YUV[:, :, 0] = embed_ha_Y
@@ -227,10 +230,10 @@ class watermark():
 
     def extract(self, filename, out_wm_name):
         if not self.wm_shape:
-            print("水印的形状未设定")
+            print("The shape of the watermark is not set")
             return 0
 
-        # 读取图片
+        # Read picture
         embed_img = cv2.imread(filename).astype(np.float32)
         if self.color_mod == 'RGB':
             embed_img_YUV = embed_img
@@ -260,7 +263,7 @@ class watermark():
         ha_Y = coeffs_Y[0]
         ha_U = coeffs_U[0]
         ha_V = coeffs_V[0]
-        # 对ha进一步进行小波变换,并把下一级ha保存到ha中
+        # Further perform wavelet transform on ha, and save the next level ha in ha
         for i in range(self.dwt_deep-1):
             coeffs_Y = dwt2(ha_Y, 'haar')
             ha_Y = coeffs_Y[0]
@@ -269,12 +272,12 @@ class watermark():
             coeffs_V = dwt2(ha_V, 'haar')
             ha_V = coeffs_V[0]
 
-        # 初始化块索引数组
+        # Initialize the block index array
         try:
             if self.ha_Y.shape == ha_Y.shape:
                 self.init_block_add_index(ha_Y.shape)
             else:
-                print('你现在要解水印的图片与之前读取的原图的形状不同,这是不被允许的')
+                print('The shape of the picture you want to de-watermark is different from the original picture read before, which is not allowed')
         except:
             self.init_block_add_index(ha_Y.shape)
 
@@ -308,7 +311,7 @@ class watermark():
                 ha_V_block[self.block_add_index0[i], self.block_add_index1[i]], index)
             wm = round((wm_Y+wm_U+wm_V)/3)
 
-            # else情况是对循环嵌入的水印的提取
+            # The else case is the extraction of the watermark embedded in the loop
             if i < self.wm_shape[0]*self.wm_shape[1]:
                 extract_wm = np.append(extract_wm, wm)
                 extract_wm_Y = np.append(extract_wm_Y, wm_Y)
