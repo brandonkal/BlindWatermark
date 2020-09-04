@@ -12,7 +12,6 @@ setup(
     # long_description=open("README.rst").read(),
     license="MIT",
     url="https://github.com/fire-keeper/BlindWatermark",
-    package_dir={'': 'BlindWatermark'},
     packages=['BlindWatermark'],
     install_requires=[
         'numpy',

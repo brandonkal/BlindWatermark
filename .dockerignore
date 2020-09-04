@@ -5,4 +5,5 @@
 !/requirements.txt
 !/setup.py
 !/bwm.py
+!/BlindWatermark
 !/BuildWatermark/**
