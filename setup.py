@@ -2,7 +2,7 @@
 from __future__ import print_function
 from setuptools import setup, find_packages
 import sys
- 
+
 setup(
     name="BlindWatermark",
     version="0.1.0",
@@ -12,11 +12,12 @@ setup(
     # long_description=open("README.rst").read(),
     license="MIT",
     url="https://github.com/fire-keeper/BlindWatermark",
-    packages=['BlindWatermark',],
+    package_dir={'': 'BlindWatermark'},
+    packages=['BlindWatermark'],
     install_requires=[
         'numpy',
-        'opencv'
-        ],
+        'opencv-python'
+    ],
     # classifiers=[
     #     "Environment :: Web Environment",
     #     "Intended Audience :: Developers",
