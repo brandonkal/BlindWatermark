@@ -51,6 +51,7 @@ if __name__ == '__main__':
         bwm.read_wm(args.wm)
         bwm.embed(args.output)
         if args.show_ncc:
+            print("Testing ncc")
             test_ncc(args.ori_img, args.output)
 
     elif args.extract:
@@ -72,6 +73,7 @@ if __name__ == '__main__':
         bwm.extract(args.ori_img, args.output)
         if args.show_ncc:
             if args.wm:
+                print("Testing ncc")
                 test_ncc(args.wm, args.output)
             else:
                 print("When you want to show the similarity between the output watermark and the original watermark, you need to give the path of the original watermark")

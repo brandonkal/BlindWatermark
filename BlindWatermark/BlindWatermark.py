@@ -1,7 +1,6 @@
 import numpy as np
 import cv2
 from pywt import dwt2, idwt2
-import os
 
 
 class watermark():
@@ -295,9 +294,6 @@ class watermark():
             ha_V.copy(), ha_block_shape, strides)
 
         extract_wm = np.array([])
-        extract_wm_Y = np.array([])
-        extract_wm_U = np.array([])
-        extract_wm_V = np.array([])
         self.random_dct = np.random.RandomState(self.random_seed_dct)
 
         index = np.arange(self.block_shape[0]*self.block_shape[1])
@@ -314,36 +310,27 @@ class watermark():
             # The else case is the extraction of the watermark embedded in the loop
             if i < self.wm_shape[0]*self.wm_shape[1]:
                 extract_wm = np.append(extract_wm, wm)
-                extract_wm_Y = np.append(extract_wm_Y, wm_Y)
-                extract_wm_U = np.append(extract_wm_U, wm_U)
-                extract_wm_V = np.append(extract_wm_V, wm_V)
             else:
                 times = int(i/(self.wm_shape[0]*self.wm_shape[1]))
                 ii = i % (self.wm_shape[0]*self.wm_shape[1])
                 extract_wm[ii] = (extract_wm[ii]*times + wm)/(times+1)
-                extract_wm_Y[ii] = (extract_wm_Y[ii]*times + wm_Y)/(times+1)
-                extract_wm_U[ii] = (extract_wm_U[ii]*times + wm_U)/(times+1)
-                extract_wm_V[ii] = (extract_wm_V[ii]*times + wm_V)/(times+1)
 
         wm_index = np.arange(extract_wm.size)
         self.random_wm = np.random.RandomState(self.random_seed_wm)
         self.random_wm.shuffle(wm_index)
         extract_wm[wm_index] = extract_wm.copy()
-        extract_wm_Y[wm_index] = extract_wm_Y.copy()
-        extract_wm_U[wm_index] = extract_wm_U.copy()
-        extract_wm_V[wm_index] = extract_wm_V.copy()
-        cv2.imwrite(out_wm_name, extract_wm.reshape(
-            self.wm_shape[0], self.wm_shape[1]))
 
-        path, file_name = os.path.split(out_wm_name)
-        if not os.path.isdir(os.path.join(path, 'Y_U_V')):
-            os.mkdir(os.path.join(path, 'Y_U_V'))
-        cv2.imwrite(os.path.join(path, 'Y_U_V', 'Y'+file_name),
-                    extract_wm_Y.reshape(self.wm_shape[0], self.wm_shape[1]))
-        cv2.imwrite(os.path.join(path, 'Y_U_V', 'U'+file_name),
-                    extract_wm_U.reshape(self.wm_shape[0], self.wm_shape[1]))
-        cv2.imwrite(os.path.join(path, 'Y_U_V', 'V'+file_name),
-                    extract_wm_V.reshape(self.wm_shape[0], self.wm_shape[1]))
+        raw_wm_img = extract_wm.reshape(
+            self.wm_shape[0], self.wm_shape[1])
+        cv2.imwrite("out_wm_raw.png", raw_wm_img)
+
+        # # Enhance extracted watermark
+        # img = cv2.imread("out_wm_raw.png", 0)
+        # # Otsu's thresholding
+        # ret2, enhanced = cv2.threshold(
+        #     raw_wm_img, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+
+        # cv2.imwrite("out_wm.png", enhanced)
 
 
 if __name__ == "__main__":
@@ -351,13 +338,3 @@ if __name__ == "__main__":
     bwm1.read_ori_img("pic/lena_grey.png")
     bwm1.read_wm("pic/wm.png")
     bwm1.embed('out.png')
-    # bwm1.extract("out.png","./out_wm.png")
-
-    # bwm2 = watermark(7373,1024,22,12)
-    # bwm2.read_ori_img('out.png')
-    # bwm2.read_wm('pic/wm2.png')
-    # bwm2.embed('out2.png')
-    # bwm2.extract('out2.png','./out_wm2.png')
-
-    # bwm1.extract('out2.png','./bwm1_out2.png')
-    # bwm2.extract('out.png','./bwm2_out.png')
