@@ -1,9 +1,10 @@
 # Ignore everything
 *
 # Allow required files
-!/pic
+!/pic/aztec.png
 !/requirements.txt
 !/setup.py
 !/bwm.py
+!/download_jar.py
 !/BlindWatermark
 !/BuildWatermark/**

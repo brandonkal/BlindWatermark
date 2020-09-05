@@ -1,8 +1,11 @@
-import numpy as np
 import cv2
+import sys
 
-img = cv2.imread("out_wm.png", 0)
+file = "/work/out_wm.png"
+if len(sys.argv > 0):
+    file = sys.argv[1]
+img = cv2.imread(file, 0)
 
 # Otsu's thresholding
 ret2, th = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-cv2.imwrite("thresholded.png", th)
+cv2.imwrite("/work/thresholded.png", th)

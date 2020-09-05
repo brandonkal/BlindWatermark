@@ -20,11 +20,11 @@ class watermark():
         # and assuming that the watermark is 64*64, then 32*32*4
         # Block and merge DCT
         shape0_int, shape1_int = int(
-            img_shape[0]/self.block_shape[0]), int(img_shape[1]/self.block_shape[1])
-        if not shape0_int*shape1_int >= self.wm_shape[0]*self.wm_shape[1]:
+            img_shape[0] / self.block_shape[0]), int(img_shape[1] / self.block_shape[1])
+        if not shape0_int * shape1_int >= self.wm_shape[0] * self.wm_shape[1]:
             print("The size of the watermark exceeds the capacity of the image")
         self.part_shape = (
-            shape0_int*self.block_shape[0], shape1_int*(self.block_shape[1]))
+            shape0_int * self.block_shape[0], shape1_int * (self.block_shape[1]))
         self.block_add_index0, self.block_add_index1 = np.meshgrid(
             np.arange(shape0_int), np.arange(shape1_int))
         self.block_add_index0, self.block_add_index1 = self.block_add_index0.flatten(
@@ -78,7 +78,7 @@ class watermark():
             self.coeffs_Y = [coeffs_Y[1]]
             self.coeffs_U = [coeffs_U[1]]
             self.coeffs_V = [coeffs_V[1]]
-            for i in range(self.dwt_deep-1):
+            for i in range(self.dwt_deep - 1):
                 coeffs_Y = dwt2(ha_Y, 'haar')
                 ha_Y = coeffs_Y[0]
                 coeffs_U = dwt2(ha_U, 'haar')
@@ -92,10 +92,10 @@ class watermark():
         self.ha_U = ha_U
         self.ha_V = ha_V
 
-        self.ha_block_shape = (int(self.ha_Y.shape[0]/self.block_shape[0]), int(
-            self.ha_Y.shape[1]/self.block_shape[1]), self.block_shape[0], self.block_shape[1])
+        self.ha_block_shape = (int(self.ha_Y.shape[0] / self.block_shape[0]), int(
+            self.ha_Y.shape[1] / self.block_shape[1]), self.block_shape[0], self.block_shape[1])
         strides = self.ha_Y.itemsize * \
-            (np.array([self.ha_Y.shape[1]*self.block_shape[0],
+            (np.array([self.ha_Y.shape[1] * self.block_shape[0],
                        self.block_shape[1], self.ha_Y.shape[1], 1]))
 
         self.ha_Y_block = np.lib.stride_tricks.as_strided(
@@ -120,7 +120,7 @@ class watermark():
 
     def block_add_wm(self, block, index, i):
 
-        i = i % (self.wm_shape[0]*self.wm_shape[1])
+        i = i % (self.wm_shape[0] * self.wm_shape[1])
 
         wm_1 = self.wm_flatten[i]
         block_dct = cv2.dct(block)
@@ -130,15 +130,15 @@ class watermark():
         block_dct_shuffled = block_dct_flatten.reshape(self.block_shape)
         U, s, V = np.linalg.svd(block_dct_shuffled)
         max_s = s[0]
-        s[0] = (max_s-max_s % self.mod+3/4 *
-                self.mod) if wm_1 >= 128 else (max_s-max_s % self.mod+1/4*self.mod)
+        s[0] = (max_s - max_s % self.mod + 3 / 4 *
+                self.mod) if wm_1 >= 128 else (max_s - max_s % self.mod + 1 / 4 * self.mod)
         if self.mod2:
             max_s = s[1]
-            s[1] = (max_s-max_s % self.mod2+3/4 *
-                    self.mod2) if wm_1 >= 128 else (max_s-max_s % self.mod2+1/4*self.mod2)
+            s[1] = (max_s - max_s % self.mod2 + 3 / 4 *
+                    self.mod2) if wm_1 >= 128 else (max_s - max_s % self.mod2 + 1 / 4 * self.mod2)
         # s[1] = (max_s-max_s%self.mod2+3/4*self.mod2) if wm_1<128 else (max_s-max_s%self.mod2+1/4*self.mod2)
 
-        ###np.dot(U[:, :k], np.dot(np.diag(sigma[:k]),v[:k, :]))
+        # #np.dot(U[:, :k], np.dot(np.diag(sigma[:k]),v[:k, :]))
         block_dct_shuffled = np.dot(U, np.dot(np.diag(s), V))
 
         block_dct_flatten = block_dct_shuffled.flatten()
@@ -277,7 +277,7 @@ class watermark():
                 self.init_block_add_index(ha_Y.shape)
             else:
                 print('The shape of the picture you want to de-watermark is different from the original picture read before, which is not allowed')
-        except:
+        except Exception:
             self.init_block_add_index(ha_Y.shape)
 
         ha_block_shape = (int(ha_Y.shape[0]/self.block_shape[0]), int(
@@ -322,15 +322,15 @@ class watermark():
 
         raw_wm_img = extract_wm.reshape(
             self.wm_shape[0], self.wm_shape[1])
-        cv2.imwrite("out_wm_raw.png", raw_wm_img)
+        cv2.imwrite("/work/out_wm_raw.png", raw_wm_img)
 
-        # # Enhance extracted watermark
-        # img = cv2.imread("out_wm_raw.png", 0)
-        # # Otsu's thresholding
-        # ret2, enhanced = cv2.threshold(
-        #     raw_wm_img, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        # Enhance extracted watermark
+        gray_img = cv2.imread("/work/out_wm_raw.png", 0)
+        # Otsu's thresholding
+        ret2, enhanced = cv2.threshold(
+            gray_img, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 
-        # cv2.imwrite("out_wm.png", enhanced)
+        cv2.imwrite(out_wm_name, enhanced)
 
 
 if __name__ == "__main__":

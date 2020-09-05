@@ -12,7 +12,11 @@ RUN apt-get update && apt install \
 
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
+
+ENV JAVA_HOME /usr/local/openjdk-16
+ENV PATH $JAVA_HOME/bin:$PATH
+
 COPY . .
-RUN python setup.py install
+RUN python ./download_jar.py && python setup.py install
 
 ENTRYPOINT [ "python", "./bwm.py" ]

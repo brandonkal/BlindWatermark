@@ -1,7 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import print_function
-from setuptools import setup, find_packages
-import sys
+from setuptools import setup
 
 setup(
     name="BlindWatermark",
@@ -15,7 +14,7 @@ setup(
     packages=['BlindWatermark'],
     install_requires=[
         'numpy',
-        'opencv-python'
+        'opencv-python-headless'
     ],
     # classifiers=[
     #     "Environment :: Web Environment",
